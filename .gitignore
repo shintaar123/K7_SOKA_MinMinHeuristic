@@ -1,0 +1,15 @@
+# hasil kompilasi & file sementara
+out/
+sources.txt
+# python
+__pycache__/
+*.pyc
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+.DS_Store
+Thumbs.db

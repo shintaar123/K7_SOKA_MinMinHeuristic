@@ -1,0 +1,7 @@
+metrik,nilai
+makespan_simulasi_detik,1593.9955
+makespan_prediksi_minmin_detik,1594.0000
+resource_utilization_persen,86.8699
+average_waiting_time_detik,339.7898
+throughput_task_per_detik,0.188206
+task_sukses,300

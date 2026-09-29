@@ -1,0 +1,62 @@
+================= HASIL SIMULASI MIN-MIN =================
+Dataset        : GoCJ | n=300  min=15000  max=900000  rata-rata=138420.0  total=41526000 MI
+Datacenter     : 1 datacenter, 5 host, 15 VM (Small/Medium/Large x5)
+Algoritma      : Min-Min (batch, independent, non-preemptive)
+
+--- Penempatan VM ---
+VM  0 (Small, 1000 MIPS) -> Host 1
+VM  1 (Medium, 2000 MIPS) -> Host 1
+VM  2 (Large, 3000 MIPS) -> Host 1
+VM  3 (Small, 1000 MIPS) -> Host 2
+VM  4 (Medium, 2000 MIPS) -> Host 2
+VM  5 (Large, 3000 MIPS) -> Host 2
+VM  6 (Small, 1000 MIPS) -> Host 3
+VM  7 (Medium, 2000 MIPS) -> Host 3
+VM  8 (Large, 3000 MIPS) -> Host 3
+VM  9 (Small, 1000 MIPS) -> Host 4
+VM 10 (Medium, 2000 MIPS) -> Host 4
+VM 11 (Large, 3000 MIPS) -> Host 4
+VM 12 (Small, 1000 MIPS) -> Host 5
+VM 13 (Medium, 2000 MIPS) -> Host 5
+VM 14 (Large, 3000 MIPS) -> Host 5
+
+--- Metrik ---
+Makespan (simulasi)       : 1594.00 detik
+Makespan (prediksi MinMin): 1594.00 detik
+Batas bawah teoritis      : 1384.20 detik
+Resource Utilization      : 86.87 %
+Average Waiting Time      : 339.79 detik
+Throughput                : 0.1882 task/detik
+Task sukses               : 300 / 300
+
+--- Beban per VM ---
+VM | tipe   | MIPS | jumlah task | busy time (s) | utilisasi VM (%)
+ 0 | Small  | 1000 |           9 |       1572.00 |    98.62
+ 1 | Medium | 2000 |          20 |       1160.75 |    72.82
+ 2 | Large  | 3000 |          32 |       1527.00 |    95.80
+ 3 | Small  | 1000 |           9 |       1574.00 |    98.75
+ 4 | Medium | 2000 |          20 |       1278.27 |    80.19
+ 5 | Large  | 3000 |          31 |       1299.00 |    81.49
+ 6 | Small  | 1000 |           9 |       1576.00 |    98.87
+ 7 | Medium | 2000 |          20 |       1372.02 |    86.07
+ 8 | Large  | 3000 |          31 |       1363.50 |    85.54
+ 9 | Small  | 1000 |           9 |       1594.00 |   100.00
+10 | Medium | 2000 |          20 |       1469.77 |    92.21
+11 | Large  | 3000 |          31 |       1371.83 |    86.06
+12 | Small  | 1000 |           8 |        700.00 |    43.91
+13 | Medium | 2000 |          20 |       1472.75 |    92.39
+14 | Large  | 3000 |          31 |       1439.66 |    90.32
+
+--- Validasi otomatis ---
+[PASS] V2  300 cloudlet berstatus SUCCESS  -> 300 / 300
+[PASS] V3  jumlah task seluruh VM = 300  -> total = 300
+[PASS] V4a makespan CloudSim ~ prediksi Min-Min  -> CloudSim=1593.9955  prediksi=1594.0000  selisih=0.0045 dtk (toleransi 0.5)
+[PASS] V4b waktu mulai tiap task ~ prediksi (urutan submit benar)  -> selisih terbesar = 0.0247 dtk
+[PASS] V4c setiap task jalan di VM hasil Min-Min
+[PASS] V5  makespan >= batas bawah teoritis  -> makespan=1594.00  batas bawah=1384.20
+[PASS] V6  Resource Utilization <= 100%  -> 86.87 %
+[PASS] V7  tidak ada task tumpang tindih di satu VM
+[PASS] V9  VM 0-2 -> Host1, VM 3-5 -> Host2, ... VM 12-14 -> Host5  -> 15 VM terpasang = 15
+[PASS] V8  penjadwal deterministik (dua kali jalan identik)
+SEMUA VALIDASI LULUS
+==========================================================

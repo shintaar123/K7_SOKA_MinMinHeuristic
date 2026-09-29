@@ -1,0 +1,6 @@
+# normalisasi line ending supaya aman lintas Windows / Linux / Mac
+* text=auto
+*.bat text eol=crlf
+*.sh  text eol=lf
+*.jar binary
+*.png binary
