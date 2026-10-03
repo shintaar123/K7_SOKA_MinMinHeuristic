@@ -119,7 +119,19 @@ Batasan:
 | Throughput | 0,1882 task/detik |
 | Task sukses | 300 dari 300 |
 
-Grafik: `results/grafik_1_beban_vm.png`, `results/grafik_2_urutan_vs_panjang.png`, `results/grafik_3_waiting_time.png`.
+### Grafik
+
+**Beban tiap VM** (utilisasi 43,91–100%, ketimpangan terkumpul di VM 12 dan VM 1)
+
+![Beban per VM](results/grafik_1_beban_vm.png)
+
+**Urutan dijadwalkan vs panjang task** (Spearman = 1,000: task pendek selalu duluan)
+
+![Urutan dijadwalkan vs panjang task](results/grafik_2_urutan_vs_panjang.png)
+
+**Waiting time per task** (task terpendek rata-rata 42,73 dtk, terpanjang 728,12 dtk)
+
+![Waiting time](results/grafik_3_waiting_time.png)
 
 ### Validasi otomatis
 
