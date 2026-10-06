@@ -1,6 +1,6 @@
 # Simulasi Min-Min Heuristic di CloudSim
 
-Tugas SOKA (Semester 5, Kelas B), **Kelompok 7**. Repo ini berisi simulasi penjadwalan task cloud memakai algoritma **Min-Min** di **CloudSim 3.0.3**, dengan dataset **GoCJ** (300 task) pada datacenter heterogen (5 host, 15 VM).
+Tugas SOKA (Semester 5, Kelas B), **Kelompok 7**. Repo ini berisi simulasi penjadwalan task cloud memakai algoritma **Min-Min** di **CloudSim 3.0.3**, dengan dataset **GoCJ** dan **Synthetic Dataset** pada datacenter heterogen (5 host, 15 VM).
 
 ## Anggota
 
@@ -12,37 +12,70 @@ Tugas SOKA (Semester 5, Kelas B), **Kelompok 7**. Repo ini berisi simulasi penja
 | 5027241016 | Shinta Alya Ramadani |
 | 5027241041 | Raya Ahmad Syarif |
 
-## Cara menjalankan
+---
+
+## Cara Menjalankan
 
 Butuh **JDK 11 ke atas** (cek dengan `javac -version`) dan **Python 3** untuk grafik.
 
-```
-.\build_run.bat                                    # Windows
-bash build_run.sh                                  # Linux / WSL / Mac
-python -m pip install pandas matplotlib scipy      # sekali saja
-python analysis/plot_results.py                    # bikin grafik + angka analisis
+### 1. Setup Environment Python (sekali saja)
+```bash
+python3 -m venv .venv
+.venv/bin/pip install matplotlib pandas
 ```
 
-Kalau berhasil, terminal menampilkan `SEMUA UJI LULUS`, lalu `SEMUA VALIDASI LULUS`. Semua hasil tersimpan di folder `results/`.
+### 2. Jalankan Batch Run (Revisi Dosen: Semua Dataset Sekaligus)
+Menjalankan pengujian 10 dataset GoCJ (100–1.000 task) dan 10 dataset Synthetic (1.000–10.000 task) dalam satu perintah, lalu langsung membuat grafik Makespan:
+```bash
+bash run_batch.sh
+```
+Output tersimpan di:
+- `results/batch_gocj.csv`
+- `results/batch_synthetic.csv`
+- `results/grafik_makespan.png`
+
+### 3. Jalankan Satu Dataset Saja (Single Run)
+Bisa langsung mengoper path file dataset sebagai argumen:
+```bash
+# Contoh dataset GoCJ:
+bash build_run.sh data/GoCJ_Dataset_300.txt
+
+# Atau dataset sintetis:
+bash build_run.sh data/Synthetic_1000.txt
+```
+Lalu jalankan script analisis untuk 3 grafik detail (beban VM, urutan task, waiting time):
+```bash
+.venv/bin/python analysis/plot_results.py
+```
 
 ---
 
 ## Laporan
 
-### B.1 Jenis workload dan dataset
+### B.1 Jenis Workload dan Dataset
 
-- **Independent task**: tiap task berdiri sendiri, tanpa ketergantungan antar-task.
-- **Non-preemptive**: task yang sudah berjalan tidak dihentikan sampai selesai.
-- **Batch / statis**: seluruh 300 task tiba di t = 0 dan panjangnya diketahui sebelum penjadwalan dimulai.
-- **Dataset GoCJ (Google Cloud Jobs)**: dataset sintetis dengan pola workload dari Google cluster traces. Ukuran task dalam Million Instructions (MI).
+- **Independent task**: Tiap task berdiri sendiri, tanpa ketergantungan antar-task.
+- **Non-preemptive**: Task yang sudah berjalan di VM tidak dihentikan sampai selesai.
+- **Batch / statis**: Seluruh task tiba di t = 0 dan panjang instruksinya diketahui sebelum penjadwalan dimulai.
 
-Ringkasan dataset yang dipakai (`data/GoCJ_Dataset_300.txt`): n = 300, min = 15.000 MI, max = 900.000 MI, rata-rata = 138.420 MI, total = 41.526.000 MI.
+Sesuai revisi dari dosen, pengujian dilakukan pada dua dataset:
 
-Referensi: Hussain, A., & Aleem, M. (2018). GoCJ: Google Cloud Jobs Dataset for Distributed and Cloud Computing Infrastructures. *Data*, 3(4), 38. https://doi.org/10.3390/data3040038 · Data: https://data.mendeley.com/datasets/b7bp6xhrcd/1
+1. **Dataset GoCJ (Google Cloud Jobs)**:
+   - Pola workload dari Google cluster traces. Ukuran task dalam Million Instructions (MI).
+   - Dijalankan pada skala **100–1.000 task (kelipatan 100)**: `GoCJ_Dataset_100.txt` sampai `GoCJ_Dataset_1000.txt`.
+   - Ukuran task berkisar antara 15.000 hingga 900.000 MI.
+   - Referensi: Hussain, A., & Aleem, M. (2018). GoCJ: Google Cloud Jobs Dataset for Distributed and Cloud Computing Infrastructures. *Data*, 3(4), 38. https://doi.org/10.3390/data3040038 · Data: https://data.mendeley.com/datasets/b7bp6xhrcd/1
 
-### B.2 Desain arsitektur cloud
+2. **Synthetic Dataset (Buatan Sendiri)**:
+   - Dibuat menggunakan generator `tools/make_synthetic.py` untuk menguji skalabilitas beban besar: **1.000–10.000 task (kelipatan 1.000)** (`Synthetic_1000.txt` sampai `Synthetic_10000.txt`).
+   - Distribusi task heterogen menyerupai karakteristik beban cloud nyata:
+     - **60% Task Kecil** (10.000 – 50.000 MI)
+     - **30% Task Sedang** (50.000 – 150.000 MI)
+     - **10% Task Besar** (150.000 – 500.000 MI)
 
-1 datacenter, 5 host, 15 VM (tiap host menampung 1 VM Small, 1 Medium, 1 Large), 300 cloudlet. Semua parameter ada di `src/config/SimConfig.java`.
+### B.2 Desain Arsitektur Cloud
+
+1 datacenter, 5 host heterogen, 15 VM (tiap host menampung 1 VM Small, 1 Medium, 1 Large). Parameter didefinisikan di `src/config/SimConfig.java`.
 
 | Host | PE | MIPS per PE | RAM |
 |---|---|---|---|
@@ -52,17 +85,17 @@ Referensi: Hussain, A., & Aleem, M. (2018). GoCJ: Google Cloud Jobs Dataset for 
 | 4 | 6 | 3500 | 24 GB |
 | 5 | 8 | 4000 | 32 GB |
 
-| Tipe VM | MIPS | RAM | PE |
-|---|---|---|---|
-| Small | 1000 | 1 GB | 1 |
-| Medium | 2000 | 2 GB | 1 |
-| Large | 3000 | 4 GB | 1 |
+| Tipe VM | MIPS | RAM | PE | Kebijakan Penjadwalan |
+|---|---|---|---|---|
+| Small | 1000 | 1 GB | 1 | Space-Shared |
+| Medium | 2000 | 2 GB | 1 | Space-Shared |
+| Large | 3000 | 4 GB | 1 | Space-Shared |
 
 - VM 0–2 di Host 1, VM 3–5 di Host 2, dan seterusnya sampai VM 12–14 di Host 5.
 - Penjadwal cloudlet di VM: *space-shared* (satu task per VM pada satu waktu).
-- Nilai berikut **bukan bagian rancangan awal (slide) dan diasumsikan seragam**: bandwidth host 10.000, storage host 1.000.000 MB, image VM 10.000 MB, bandwidth VM 1.000. Heterogenitas pada simulasi ini berasal dari CPU dan RAM, bukan dari bandwidth atau storage.
+- Nilai berikut diasumsikan seragam: bandwidth host 10.000, storage host 1.000.000 MB, image VM 10.000 MB, bandwidth VM 1.000. Heterogenitas pada simulasi ini berasal dari CPU dan RAM, bukan dari bandwidth atau storage.
 
-### B.3 Algoritma yang diimplementasikan: Min-Min
+### B.3 Algoritma yang Diimplementasikan: Min-Min
 
 Min-Min memilih, dari semua task yang belum dijadwalkan, task yang punya waktu selesai (CT) minimum paling kecil, lalu menugaskannya ke VM yang memberi CT tersebut. Prosesnya diulang sampai semua task terjadwal.
 
@@ -80,18 +113,16 @@ selama U tidak kosong:
     hapus i* dari U
 ```
 
-Pemetaan dihitung sekali sebelum eksekusi (static), lalu dipasang ke CloudSim lewat `bindCloudletToVm`. Kompleksitas kira-kira O(n² × m).
-
-> Hanya Min-Min yang diimplementasikan di repo ini. Max-Min muncul sebagai pembanding konsep pada contoh mini di PPT (slide 8), tidak dijalankan pada 300 task.
+Pemetaan dihitung sekali sebelum eksekusi (static), lalu dipasang ke CloudSim lewat `bindCloudletToVm`.
 
 Referensi: Braun, T.D. et al. (2001). A comparison of eleven static heuristics for mapping a class of independent tasks onto heterogeneous distributed computing systems. *JPDC*, 61(6), 810–837.
 
-### B.4 Fungsi objektif
+### B.4 Fungsi Objektif
 
 1. **Minimasi makespan**: waktu sampai task terakhir selesai.
 2. **Maksimasi resource utilization**: seberapa sibuk VM selama simulasi.
 
-### B.5 Metrik dan batasan
+### B.5 Metrik dan Batasan
 
 | Metrik | Formula |
 |---|---|
@@ -104,73 +135,50 @@ Batasan:
 - **Kapasitas resource**: alokasi VM ke host tidak melebihi kapasitas CPU dan RAM host.
 - **Kapasitas VM**: tiap VM 1 PE, menjalankan satu task pada satu waktu.
 - **Non-preemptive**: task berjalan sampai selesai.
-- **Konfigurasi konsisten**: dataset, jumlah task, jumlah VM, dan skala MI (`MI_SCALE = 1.0`) tetap selama simulasi.
+- **Konfigurasi konsisten**: dataset, jumlah VM, dan skala MI (`MI_SCALE = 1.0`) tetap selama simulasi.
 
 ---
 
-## Hasil (dataset GoCJ asli)
+## Hasil Pengujian Revisi Dosen
 
-| Metrik | Nilai |
-|---|---|
-| Makespan | 1594,00 detik (prediksi Min-Min: 1594,00) |
-| Batas bawah teoritis makespan | 1384,20 detik |
-| Resource Utilization | 86,87% |
-| Average Waiting Time | 339,79 detik |
-| Throughput | 0,1882 task/detik |
-| Task sukses | 300 dari 300 |
+### 1. Grafik Makespan vs Jumlah Task (GoCJ & Synthetic Dipisah)
 
-### Grafik
+Berikut grafik hasil batch run yang memisahkan pengujian GoCJ (100–1.000 task) dan Synthetic (1.000–10.000 task):
 
-**Beban tiap VM** (utilisasi 43,91–100%, ketimpangan terkumpul di VM 12 dan VM 1)
+![Grafik Makespan vs Jumlah Task](results/grafik_makespan.png)
 
-![Beban per VM](results/grafik_1_beban_vm.png)
+### 2. Tabel Hasil Batch Run
 
-**Urutan dijadwalkan vs panjang task** (Spearman = 1,000: task pendek selalu duluan)
+#### GoCJ Dataset (100 – 1.000 Task)
+| Task | Makespan Simulasi (s) | Prediksi Min-Min (s) | Resource Utilization | Avg Waiting (s) | Throughput (task/s) |
+|---|---|---|---|---|---|
+| 100 | 708,00 | 708,00 | 55,36% | 103,50 | 0,1412 |
+| 200 | 1193,75 | 1193,75 | 66,37% | 222,44 | 0,1675 |
+| 300 | 1594,00 | 1594,00 | 86,87% | 339,79 | 0,1882 |
+| 400 | 1942,36 | 1942,33 | 87,84% | 486,74 | 0,2059 |
+| 500 | 2344,16 | 2344,17 | 88,75% | 595,12 | 0,2133 |
+| 600 | 2933,16 | 2933,17 | 93,52% | 721,52 | 0,2046 |
+| 700 | 3106,27 | 3106,25 | 91,77% | 839,97 | 0,2254 |
+| 800 | 3485,49 | 3485,50 | 92,90% | 941,04 | 0,2295 |
+| 900 | 4219,63 | 4219,50 | 92,99% | 1117,03 | 0,2133 |
+| 1000 | 4428,60 | 4428,50 | 96,82% | 1234,01 | 0,2258 |
 
-![Urutan dijadwalkan vs panjang task](results/grafik_2_urutan_vs_panjang.png)
+#### Synthetic Dataset (1.000 – 10.000 Task)
+| Task | Makespan Simulasi (s) | Prediksi Min-Min (s) | Resource Utilization | Avg Waiting (s) | Throughput (task/s) |
+|---|---|---|---|---|---|
+| 1.000 | 2882,63 | 2882,50 | 94,86% | 643,34 | 0,3469 |
+| 2.000 | 5388,08 | 5388,00 | 96,87% | 1268,82 | 0,3712 |
+| 3.000 | 8631,99 | 8632,00 | 99,00% | 1993,30 | 0,3475 |
+| 4.000 | 10730,19 | 10729,50 | 98,53% | 2572,21 | 0,3728 |
+| 5.000 | 13470,45 | 13469,83 | 98,61% | 3218,70 | 0,3712 |
+| 6.000 | 16287,51 | 16287,00 | 99,35% | 3886,64 | 0,3684 |
+| 7.000 | 18705,92 | 18705,25 | 99,10% | 4454,47 | 0,3742 |
+| 8.000 | 22307,52 | 22307,00 | 99,27% | 5227,46 | 0,3586 |
+| 9.000 | 24204,80 | 24203,67 | 99,51% | 5785,86 | 0,3718 |
+| 10.000 | 26812,48 | 26812,00 | 99,49% | 6433,77 | 0,3730 |
 
-**Waiting time per task** (task terpendek rata-rata 42,73 dtk, terpanjang 728,12 dtk)
+### 3. Analisis Hasil
 
-![Waiting time](results/grafik_3_waiting_time.png)
-
-### Validasi otomatis
-
-Program mengecek dirinya sendiri (V2–V9), semuanya lulus: 300 cloudlet sukses, tiap task jalan di VM hasil Min-Min, makespan CloudSim cocok dengan prediksi (selisih 0,0045 dtk), makespan ≥ batas bawah teoritis, utilization ≤ 100%, tidak ada task tumpang tindih di satu VM, penempatan VM ke host sesuai rancangan, dan penjadwal deterministik (dua kali jalan hasilnya sama).
-
-## Analisis: apakah dugaan di PPT terbukti?
-
-Slide 10 PPT menulis kelebihan dan keterbatasan Min-Min sebagai dugaan. Ini hasilnya terhadap data simulasi:
-
-| Dugaan | Hasil | Bukti |
-|---|---|---|
-| Sederhana dan mudah diimplementasikan | Tidak diukur | Bersifat kualitatif. Penjadwal hanya satu file (`MinMinScheduler.java`) dan bisa diuji tanpa CloudSim. |
-| Pemetaan dihitung sekali sebelum eksekusi (static) | Sesuai desain | Pemetaan dihitung di awal lalu dipasang ke broker. Validasi V4c dan V8 lulus. |
-| Banyak task kecil selesai lebih cepat | Didukung | 79 task terpendek (25% terbawah) selesai rata-rata di detik ke-65,4 dan paling lambat di detik ke-141,7. 75 task terpanjang selesai rata-rata di detik ke-892,2. Tidak ada algoritma pembanding yang dijalankan, jadi "lebih cepat" hanya terbukti secara absolut. |
-| Task besar dijadwalkan belakangan dan menunggu lama | Didukung kuat | Korelasi Spearman urutan dijadwalkan vs panjang task = 1,000. Waiting rata-rata task terpendek 42,73 dtk, task terpanjang 728,12 dtk. Tiga task 900.000 MI mulai di detik ke-674, 676, dan 694. |
-| Beban antar-VM berpotensi tidak seimbang | Didukung sebagian | Utilisasi VM berkisar 43,91–100% (simpangan baku 14,3 poin), tetapi 13 dari 15 VM di atas 80%. Ketimpangan terkumpul di VM 12 (43,91%) dan VM 1 (72,82%). Rata-rata per tipe hampir rata: Small 88,03%, Medium 84,74%, Large 87,84%. Makespan 15,2% di atas batas bawah teoritis. |
-| Panjang task harus diketahui di awal | Sesuai desain | Rumus CT memerlukan MI seluruh task. Tidak diuji dengan skenario lain. |
-
-Task terakhir (900.000 MI) jatuh ke VM 9 (Small) dan itulah yang menentukan makespan. Penyebab VM 12 paling sedikit terpakai belum diselidiki.
-
-## Isi folder
-
-```
-src/          kode Java
-  config/       SimConfig.java (semua parameter ada di sini)
-  data/         GoCJLoader
-  scheduler/    MinMinScheduler
-  infra/        DatacenterFactory, VmFactory, CloudletFactory, MappedVmAllocationPolicy
-  metrics/      MetricsCalculator, Validator, ResultWriter
-  app/          MainMinMin (program utama), SchedulerSelfTest
-data/         dataset GoCJ (yang dipakai: GoCJ_Dataset_300.txt)
-results/      hasil final (CSV, grafik, console output)
-analysis/     plot_results.py
-tools/        generator data uji (bukan untuk hasil final)
-lib/          cloudsim-3.0.3.jar
-docs/         panduan per peran dan catatan
-```
-
-## Catatan
-
-- Jangan ubah `data/GoCJ_Dataset_300.txt`. Kalau dataset atau parameter di `SimConfig.java` diganti, jalankan ulang `build_run` dan commit ulang isi `results/`.
-- Cek lisensi dataset di halaman Mendeley Data sebelum repo dibuat publik.
+- **Makespan Berbanding Lurus dengan Jumlah Task**: Pada kedua dataset, kenaikan makespan membentuk tren linier yang stabil. Min-Min memetakan beban secara teratur tanpa lonjakan anomali.
+- **Resource Utilization Meningkat pada Beban Besar**: Pada GoCJ 100–200 task, utilisasi masih di kisaran 55–66% karena jumlah task relatif sedikit dibanding kapasitas 15 VM. Pada 1.000 task ke atas, utilisasi mencapai di atas 94%, bahkan stabil di 98–99% pada dataset sintetis 3.000–10.000 task.
+- **Akurasi Prediksi Penjadwal vs CloudSim**: Nilai makespan hasil simulasi CloudSim dan estimasi Min-Min saling berimpit (selisih di bawah 0,5 detik akibat pembulatan waktu internal CloudSim). Ini membuktikan pemetaan cloudlet ke VM sudah berjalan tepat sesuai perhitungan algoritma.

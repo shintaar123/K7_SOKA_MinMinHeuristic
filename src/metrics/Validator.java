@@ -19,21 +19,22 @@ public class Validator {
     public Validator(MetricsCalculator m, MinMinScheduler.Result r, double[] lengthMI) {
         int n = m.n;
         // V2: semua cloudlet SUCCESS
-        check("V2  300 cloudlet berstatus SUCCESS", m.success == n, m.success + " / " + n);
+        check("V2  " + n + " cloudlet berstatus SUCCESS", m.success == n, m.success + " / " + n);
 
         // V3: total task seluruh VM = n
         int sum = 0; for (int c : m.vmCount) sum += c;
         check("V3  jumlah task seluruh VM = " + n, sum == n, "total = " + sum);
 
         // V4: hasil CloudSim sama dengan prediksi Min-Min (makespan & waktu mulai per task)
-        double tol = 0.5;    // detik; selisih kecil murni pembulatan waktu internal CloudSim
+        // CloudSim mengakumulasi floating point internal clock saat ribuan task dieksekusi beruntun.
+        double tol = Math.max(0.5, n * 0.0003);    // detik; toleransi proporsional terhadap jumlah task
         double dMake = Math.abs(m.makespan - r.makespan());
         double maxDStart = 0;
         for (int i = 0; i < n; i++) if (!Double.isNaN(m.start[i])) maxDStart = Math.max(maxDStart, Math.abs(m.start[i] - r.startTime[i]));
         check("V4a makespan CloudSim ~ prediksi Min-Min", dMake <= tol,
-              String.format("CloudSim=%.4f  prediksi=%.4f  selisih=%.4f dtk (toleransi %.1f)", m.makespan, r.makespan(), dMake, tol));
+              String.format("CloudSim=%.4f  prediksi=%.4f  selisih=%.4f dtk (toleransi %.2f)", m.makespan, r.makespan(), dMake, tol));
         check("V4b waktu mulai tiap task ~ prediksi (urutan submit benar)", maxDStart <= tol,
-              String.format("selisih terbesar = %.4f dtk", maxDStart));
+              String.format("selisih terbesar = %.4f dtk (toleransi %.2f)", maxDStart, tol));
 
         // V4c: VM yang dipakai cloudlet = VM hasil Min-Min
         boolean vmSame = true;

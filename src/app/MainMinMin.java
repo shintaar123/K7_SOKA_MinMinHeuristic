@@ -27,19 +27,21 @@ public class MainMinMin {
     public static void main(String[] args) throws Exception {
         String datasetPath = args.length > 0 ? args[0] : SimConfig.DATASET_PATH;
 
+        // 1) baca dataset (bisa dinamis dari file atau jumlah SimConfig jika default)
+        double[] lengthMI = GoCJLoader.loadAll(datasetPath, SimConfig.MI_SCALE);
+        int numTasks = lengthMI.length;
+
         // ---- (V10) cetak parameter di awal run, cocokkan dengan PPT ----
         System.out.println("=== PARAMETER RUN ===");
         System.out.println("Dataset     : " + datasetPath);
-        System.out.println("Jumlah task : " + SimConfig.NUM_TASK + " (skala MI = " + SimConfig.MI_SCALE + ")");
+        System.out.println("Jumlah task : " + numTasks + " (skala MI = " + SimConfig.MI_SCALE + ")");
         System.out.println("Host        : " + SimConfig.NUM_HOST + "  PE=" + Arrays.toString(SimConfig.HOST_PES)
                 + "  MIPS/PE=" + Arrays.toString(SimConfig.HOST_PE_MIPS) + "  RAM(MB)=" + Arrays.toString(SimConfig.HOST_RAM_MB));
         System.out.println("VM          : " + SimConfig.NUM_VM + "  MIPS=" + Arrays.toString(SimConfig.VM_TYPE_MIPS)
                 + " (Small/Medium/Large)  RAM(MB)=" + Arrays.toString(SimConfig.VM_TYPE_RAM));
         System.out.println();
 
-        // 1) baca dataset
-        double[] lengthMI = GoCJLoader.load(datasetPath, SimConfig.NUM_TASK, SimConfig.MI_SCALE);
-        String datasetInfo = "GoCJ | " + GoCJLoader.stats(lengthMI);
+        String datasetInfo = (datasetPath.contains("Synthetic") ? "Synthetic | " : "GoCJ | ") + GoCJLoader.stats(lengthMI);
         System.out.println("Dataset OK  : " + datasetInfo);
 
         // 2) hitung penjadwalan Min-Min (kode murni, di luar CloudSim)
@@ -70,7 +72,7 @@ public class MainMinMin {
         Log.setDisabled(false);
 
         // 5) metrik + validasi + tulis file
-        MetricsCalculator m = new MetricsCalculator(finished, SimConfig.NUM_TASK);
+        MetricsCalculator m = new MetricsCalculator(finished, numTasks);
         Validator v = new Validator(m, r, lengthMI);
         // V8 (deterministik): jalankan penjadwal sekali lagi, hasil harus identik
         MinMinScheduler.Result r2 = MinMinScheduler.schedule(lengthMI, mips);

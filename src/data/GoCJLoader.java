@@ -11,6 +11,36 @@ import java.util.List;
 public final class GoCJLoader {
     private GoCJLoader() {}
 
+    public static double[] loadAll(String path, double scale) throws IOException {
+        File f = new File(path);
+        if (!f.exists()) {
+            throw new IOException("Dataset tidak ditemukan: " + f.getAbsolutePath());
+        }
+        List<Double> vals = new ArrayList<Double>();
+        BufferedReader br = new BufferedReader(new FileReader(f));
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.replace("\uFEFF", "").trim();
+                if (line.isEmpty()) continue;
+                line = line.split("[\\s,;]+")[0];
+                double v = Double.parseDouble(line);
+                if (v <= 0) throw new IOException("Panjang task harus > 0, ditemukan: " + v);
+                vals.add(v * scale);
+            }
+        } catch (NumberFormatException e) {
+            throw new IOException("Ada baris bukan angka di " + path + ": " + e.getMessage());
+        } finally {
+            br.close();
+        }
+        if (vals.isEmpty()) {
+            throw new IOException("Dataset kosong: " + path);
+        }
+        double[] out = new double[vals.size()];
+        for (int i = 0; i < vals.size(); i++) out[i] = vals.get(i);
+        return out;
+    }
+
     public static double[] load(String path, int n, double scale) throws IOException {
         File f = new File(path);
         if (!f.exists()) {
