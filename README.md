@@ -225,6 +225,12 @@ Panel kiri GoCJ (100–1.000 task), panel kanan Synthetic (1.000–10.000 task).
 
 ![Grafik Makespan vs Jumlah Task](results/grafik_makespan.png)
 
+**Grafik gabungan** 
+
+GoCJ dan Synthetic digambar pada satu grafik sebagai dua series (biru = GoCJ, hijau = Synthetic). Sumbu X memakai skala log karena rentang GoCJ (100–1.000) jauh lebih kecil daripada Synthetic (1.000–10.000). Kedua series berasal dari dataset berbeda, jadi tidak bisa dibaca sebagai satu kurva yang menyambung. Pada 1.000 task, makespan Synthetic (2.882,63 s) lebih rendah daripada GoCJ (4.428,60 s) karena task Synthetic rata-rata lebih pendek, bukan karena kesalahan algoritma.
+
+![Grafik Makespan Gabungan](results/grafik_makespan_gabungan.png)
+
 ### 2. Tabel Hasil
 
 #### GoCJ Dataset (100 – 1.000 task)
